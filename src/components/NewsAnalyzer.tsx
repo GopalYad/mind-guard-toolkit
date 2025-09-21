@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, CheckCircle, Shield, Brain, Search, Zap } from "lucide-react";
 import { AnalysisResult } from "./AnalysisResult";
 import { DigitalImmunityTip } from "./DigitalImmunityTip";
+import { DarkModeToggle } from "./DarkModeToggle";
 
 interface AnalysisData {
   credibilityScore: number;
@@ -91,7 +92,12 @@ export function NewsAnalyzer() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-8 p-6">
+    <div className="w-full max-w-4xl mx-auto space-y-8 p-6 relative">
+      {/* Dark mode toggle */}
+      <div className="absolute top-0 right-0 z-50">
+        <DarkModeToggle />
+      </div>
+      
       {/* Header */}
       <div className="text-center space-y-6 relative">
         <div className="absolute inset-0 bg-gradient-glow opacity-50 blur-3xl -z-10" />
