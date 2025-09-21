@@ -7,6 +7,7 @@ import { AlertTriangle, CheckCircle, Shield, Brain, Search, Zap } from "lucide-r
 import { AnalysisResult } from "./AnalysisResult";
 import { DigitalImmunityTip } from "./DigitalImmunityTip";
 import { DarkModeToggle } from "./DarkModeToggle";
+import { FileUpload } from "./FileUpload";
 
 interface AnalysisData {
   credibilityScore: number;
@@ -23,8 +24,10 @@ interface AnalysisData {
 
 export function NewsAnalyzer() {
   const [newsContent, setNewsContent] = useState("");
+  const [sourceFile, setSourceFile] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisData | null>(null);
+  const [activeTab, setActiveTab] = useState<"text" | "file">("text");
 
   const mockAnalysis = (): AnalysisData => {
     const mockResults = [
@@ -91,6 +94,12 @@ export function NewsAnalyzer() {
     setIsAnalyzing(false);
   };
 
+  const handleFileTextExtracted = (extractedText: string, filename: string) => {
+    setNewsContent(extractedText);
+    setSourceFile(filename);
+    setActiveTab("text"); // Switch to text tab to show extracted content
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8 p-6 relative">
       {/* Dark mode toggle */}
@@ -141,70 +150,110 @@ export function NewsAnalyzer() {
             <span className="bg-gradient-hero bg-clip-text text-transparent">Analyze News Content</span>
           </CardTitle>
           <CardDescription className="text-base">
-            Paste any news article, tweet, headline, or social media post to analyze its credibility and learn about misinformation patterns
+            Type, paste, or upload news content to analyze its credibility and learn about misinformation patterns
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="relative">
-            <Textarea
-              placeholder="Paste your news content here... (articles, tweets, headlines, social media posts)"
-              value={newsContent}
-              onChange={(e) => setNewsContent(e.target.value)}
-              className="min-h-[140px] resize-none text-base leading-relaxed border-2 focus:border-primary/50 transition-all duration-300"
-            />
-            {newsContent && (
-              <div className="absolute top-3 right-3">
-                <Badge variant="outline" className="bg-background/80 backdrop-blur-sm">
-                  {newsContent.split(' ').length} words
-                </Badge>
-              </div>
-            )}
+          {/* Tab Selection */}
+          <div className="flex space-x-1 p-1 bg-background/50 rounded-lg border border-border/20">
+            <button
+              onClick={() => setActiveTab("text")}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
+                activeTab === "text"
+                  ? "bg-gradient-hero text-white shadow-glow"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+              }`}
+            >
+              Text Input
+            </button>
+            <button
+              onClick={() => setActiveTab("file")}
+              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
+                activeTab === "file"
+                  ? "bg-gradient-hero text-white shadow-glow"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+              }`}
+            >
+              File Upload
+            </button>
           </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">
-                {newsContent.length} characters
-              </span>
-              {newsContent.length > 0 && (
-                <div className="flex items-center gap-1">
-                  <div className="h-1.5 w-1.5 bg-verified rounded-full animate-pulse" />
-                  <span className="text-xs text-verified">Ready to analyze</span>
+
+          {activeTab === "text" ? (
+            <div className="space-y-4">
+              <div className="relative">
+                <Textarea
+                  placeholder="Paste your news content here... (articles, tweets, headlines, social media posts)"
+                  value={newsContent}
+                  onChange={(e) => setNewsContent(e.target.value)}
+                  className="min-h-[140px] resize-none text-base leading-relaxed border-2 focus:border-primary/50 transition-all duration-300"
+                />
+                {newsContent && (
+                  <div className="absolute top-3 right-3">
+                    <Badge variant="outline" className="bg-background/80 backdrop-blur-sm">
+                      {newsContent.split(' ').length} words
+                    </Badge>
+                  </div>
+                )}
+                {sourceFile && (
+                  <div className="absolute bottom-3 left-3">
+                    <Badge className="bg-gradient-hero text-white text-xs">
+                      From: {sourceFile}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-muted-foreground">
+                    {newsContent.length} characters
+                  </span>
+                  {newsContent.length > 0 && (
+                    <div className="flex items-center gap-1">
+                      <div className="h-1.5 w-1.5 bg-verified rounded-full animate-pulse" />
+                      <span className="text-xs text-verified">Ready to analyze</span>
+                    </div>
+                  )}
+                </div>
+                
+                <Button 
+                  onClick={analyzeNews}
+                  disabled={!newsContent.trim() || isAnalyzing}
+                  className="bg-gradient-hero hover:shadow-colored transition-all duration-300 text-white px-6 py-2.5 text-base font-medium hover:scale-105"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Zap className="h-5 w-5 mr-2 animate-bounce" />
+                      <span className="animate-pulse">Analyzing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="h-5 w-5 mr-2" />
+                      Analyze Content
+                    </>
+                  )}
+                </Button>
+              </div>
+              
+              {/* Analysis Progress */}
+              {isAnalyzing && (
+                <div className="space-y-3 animate-fadeIn">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
+                    <span>Processing content...</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                    <div className="h-full bg-gradient-hero animate-pulse rounded-full" 
+                         style={{ width: '100%', animationDuration: '2s' }} />
+                  </div>
                 </div>
               )}
             </div>
-            
-            <Button 
-              onClick={analyzeNews}
-              disabled={!newsContent.trim() || isAnalyzing}
-              className="bg-gradient-hero hover:shadow-colored transition-all duration-300 text-white px-6 py-2.5 text-base font-medium hover:scale-105"
-            >
-              {isAnalyzing ? (
-                <>
-                  <Zap className="h-5 w-5 mr-2 animate-bounce" />
-                  <span className="animate-pulse">Analyzing...</span>
-                </>
-              ) : (
-                <>
-                  <Brain className="h-5 w-5 mr-2" />
-                  Analyze Content
-                </>
-              )}
-            </Button>
-          </div>
-          
-          {/* Analysis Progress */}
-          {isAnalyzing && (
-            <div className="space-y-3 animate-fadeIn">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
-                <span>Processing content...</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                <div className="h-full bg-gradient-hero animate-pulse rounded-full" 
-                     style={{ width: '100%', animationDuration: '2s' }} />
-              </div>
-            </div>
+          ) : (
+            <FileUpload 
+              onTextExtracted={handleFileTextExtracted}
+              disabled={isAnalyzing}
+            />
           )}
         </CardContent>
       </Card>
