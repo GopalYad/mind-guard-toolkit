@@ -145,6 +145,8 @@ export default {
         "bounce-slow": "bounce 2s infinite",
         "fadeIn": "fadeIn 0.5s ease-out",
         "slideUp": "slideUp 0.3s ease-out",
+        "glow": "darkGlow 3s ease-in-out infinite alternate",
+        "shimmer": "shimmer 2s linear infinite",
       },
     },
   },
